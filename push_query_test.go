@@ -41,6 +41,18 @@ func TestIntegrationKsqlDB_Push(t *testing.T) {
 
 	require.Nil(t, err)
 
+	// drop stream
+	defer func() {
+		_, err = ksql.Exec(context.Background(), StmntSQL{
+			KSQL: "DROP STREAM ${stream_name};",
+			Variables: Variables{
+				"stream_name": streamName,
+			},
+		})
+
+		require.Nil(t, err)
+	}()
+
 	type args struct {
 		q        QuerySQL
 		headChan chan Header
@@ -161,14 +173,4 @@ func TestIntegrationKsqlDB_Push(t *testing.T) {
 			assert.Nil(t, err)
 		}
 	}
-
-	// drop stream
-	_, err = ksql.Exec(context.Background(), StmntSQL{
-		KSQL: "DROP STREAM ${stream_name};",
-		Variables: Variables{
-			"stream_name": streamName,
-		},
-	})
-
-	require.Nil(t, err)
 }

@@ -32,6 +32,12 @@ func TestIntegrationKsqlDB_ShowStreams(t *testing.T) {
 
 	require.Nil(t, err)
 
+	// drop stream
+	defer func() {
+		_, err = ksql.Exec(context.Background(), StmntSQL{KSQL: "DROP STREAM show_streams_test;"})
+		require.Nil(t, err)
+	}()
+
 	type args struct {
 		ctx context.Context
 	}
@@ -76,8 +82,4 @@ func TestIntegrationKsqlDB_ShowStreams(t *testing.T) {
 			assert.Nil(t, err)
 		}
 	}
-
-	// delete stream
-	_, err = ksql.Exec(context.Background(), StmntSQL{KSQL: "DROP STREAM show_streams_test;"})
-	require.Nil(t, err)
 }
