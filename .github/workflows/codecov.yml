@@ -1,0 +1,20 @@
+name: Docker Image CI
+
+on: [push, pull_request]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-go@v2
+      with:
+        go-verion: '1.20'
+    - name: Run ksqlDB
+      run: make start-ksqldb
+    - name: Run test
+      run: make test-cov
+    - name: Stop ksqlDB
+      run: make stop-ksqldb
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
