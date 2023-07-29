@@ -10,6 +10,19 @@ import (
 )
 
 func TestIntegrationKsqlDB_Pull(t *testing.T) {
+	createStreamStmnt := `
+	CREATE STREAM IF NOT EXISTS pull_test(
+		d1 BOOLEAN,
+		d2 VARCHAR,
+		d3 INT,
+		d4 BIGINT,
+		d5 DOUBLE,
+		d6 DECIMAL(5, 2)
+	) WITH (
+		kafka_topic='test_stream', 
+		value_format='protobuf',
+		partitions=1
+	);`
 	ksql, err := NewKsqlDB(net.Options{
 		BaseUrl:   "http://localhost:8088",
 		AllowHTTP: true,
@@ -41,13 +54,28 @@ func TestIntegrationKsqlDB_Pull(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				q: QuerySQL{
-					SQL: "SELECT * FROM test_stream LIMIT 1;",
+					SQL: "SELECT * FROM pull_test LIMIT 1;",
 				},
 			},
 			initData: func(ctx context.Context, ksql *KsqlDB) error {
 				// insert exactly one row of data
 				stmnt := StmntSQL{
-					KSQL: insertStreamQuery,
+					KSQL: `
+					INSERT INTO pull_test(
+						d1,
+						d2,
+						d3,
+						d4,
+						d5,
+						d6
+					) VALUES (
+						true,
+						'varchar',
+						1,
+						10,
+						1.5,
+						10.50
+					);`,
 				}
 
 				_, err := ksql.Exec(ctx, stmnt)
@@ -95,4 +123,8 @@ func TestIntegrationKsqlDB_Pull(t *testing.T) {
 			assert.Nil(t, err)
 		}
 	}
+
+	// drop stream
+	_, err = ksql.Exec(context.Background(), StmntSQL{KSQL: "DROP STREAM pull_test;"})
+	require.Nil(t, err)
 }
