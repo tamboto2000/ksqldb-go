@@ -2,7 +2,6 @@ package ksqldbx
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -79,9 +78,6 @@ func TestIntegrationKsqlDB_ShowStreams(t *testing.T) {
 	}
 
 	// delete stream
-	_, err = ksql.Exec(context.Background(), StmntSQL{
-		KSQL: fmt.Sprintf("DROP STREAM %s;", "show_streams_test"),
-	})
-
+	_, err = ksql.Exec(context.Background(), StmntSQL{KSQL: "DROP STREAM show_streams_test;"})
 	require.Nil(t, err)
 }
