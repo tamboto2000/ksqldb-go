@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/github/tamboto2000/ksqldbx/branch/main/graph/badge.svg?token=uvClrg0NnY)](https://codecov.io/github/tamboto2000/ksqldbx)
+
 # ksqlDB Go library with extensions
 This is an unconnected fork from [Thomaz Meitz](https://github.com/thmeitz/ksqldb-go) and will be developed on its own
 
