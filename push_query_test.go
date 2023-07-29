@@ -7,13 +7,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/tamboto2000/ksqldbx/internal/utils"
 	"github.com/tamboto2000/ksqldbx/net"
 )
 
-const (
-	createStreamStmnt = `
-	CREATE STREAM IF NOT EXISTS test_stream(
+func TestIntegrationKsqlDB_Push(t *testing.T) {
+	createStreamStmnt := `
+	CREATE STREAM IF NOT EXISTS push_test(
 		d1 BOOLEAN,
 		d2 VARCHAR,
 		d3 INT,
@@ -24,28 +23,8 @@ const (
 		kafka_topic='test_stream', 
 		value_format='protobuf',
 		partitions=1
-	);
-`
-	insertStreamQuery = `
-		INSERT INTO test_stream(
-			d1,
-			d2,
-			d3,
-			d4,
-			d5,
-			d6			
-		) VALUES (
-			true,
-			'varchar',
-			1,
-			10,
-			1.5,
-			10.50
-		);
-	`
-)
+	);`
 
-func TestIntegrationKsqlDB_Push(t *testing.T) {
 	streamName := "push_test"
 
 	ksql, err := NewKsqlDB(net.Options{
@@ -57,7 +36,7 @@ func TestIntegrationKsqlDB_Push(t *testing.T) {
 
 	// create a stream
 	_, err = ksql.Exec(context.Background(), StmntSQL{
-		KSQL: utils.CreateStreamTestStmnt(streamName),
+		KSQL: createStreamStmnt,
 	})
 
 	require.Nil(t, err)
@@ -94,7 +73,22 @@ func TestIntegrationKsqlDB_Push(t *testing.T) {
 			initData: func(ctx context.Context, ksql *KsqlDB) error {
 				// insert exactly one row of data
 				stmnt := StmntSQL{
-					KSQL: insertStreamQuery,
+					KSQL: `
+					INSERT INTO push_test(
+						d1,
+						d2,
+						d3,
+						d4,
+						d5,
+						d6			
+					) VALUES (
+						true,
+						'varchar',
+						1,
+						10,
+						1.5,
+						10.50
+					);`,
 				}
 
 				_, err := ksql.Exec(ctx, stmnt)
@@ -167,4 +161,14 @@ func TestIntegrationKsqlDB_Push(t *testing.T) {
 			assert.Nil(t, err)
 		}
 	}
+
+	// drop stream
+	_, err = ksql.Exec(context.Background(), StmntSQL{
+		KSQL: "DROP STREAM ${stream_name};",
+		Variables: Variables{
+			"stream_name": streamName,
+		},
+	})
+
+	require.Nil(t, err)
 }
