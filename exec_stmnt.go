@@ -23,13 +23,6 @@ type CmdStatus struct {
 	CmdSeqNumber int64  `json:"commandSequenceNumber"`
 }
 
-type Stream struct {
-	Name   string `json:"name"`
-	Topic  string `json:"topic"`
-	Format string `json:"format"`
-	Type   string `json:"type"`
-}
-
 type Table struct {
 	Name       string `json:"name"`
 	Topic      string `json:"topic"`
@@ -69,6 +62,9 @@ type SourceDesc struct {
 	Timestamp    string  `json:"timestamp"`
 	Format       string  `json:"format"`
 	Topic        string  `json:"topic"`
+	KeyFormat    string  `json:"keyFormat"`
+	ValueFormat  string  `json:"valueFormat"`
+	IsWindowed   bool    `json:"false"`
 	Extended     bool    `json:"extended"`
 	Statistics   string  `json:"statistics"`
 	ErrorStats   string  `json:"errorStats"`
