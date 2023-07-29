@@ -15,13 +15,8 @@ restart-ksqldb: stop-ksqldb start-ksqldb
 ksql-cli:
 	docker exec -it ksqldb-cli ksql http://primary-ksqldb-server:8088			
 
-integration-test:
-	docker-compose up -d
-	go test ./... -coverprofile=coverage.out
-	docker-compose down
-
 test-cov:
-	go test ./... -coverprofile=coverage.out
+	go test ./... -race -covermode=atomic -coverprofile=coverage.out
 
 test-cov-view:
 	go tool cover -html="coverage.out"
