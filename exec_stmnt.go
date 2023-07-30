@@ -23,14 +23,6 @@ type CmdStatus struct {
 	CmdSeqNumber int64  `json:"commandSequenceNumber"`
 }
 
-type Table struct {
-	Name       string `json:"name"`
-	Topic      string `json:"topic"`
-	Format     string `json:"format"`
-	Type       string `json:"type"`
-	IsWindowed bool   `json:"isWindowed"`
-}
-
 type Query struct {
 	QueryString string `json:"queryString"`
 	Sinks       string `json:"sinks"`

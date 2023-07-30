@@ -83,3 +83,70 @@ func TestIntegrationKsqlDB_ShowStreams(t *testing.T) {
 		}
 	}
 }
+
+func TestIntegrationKsqlDB_ShowTables(t *testing.T) {
+	createTableStmnt := `
+	CREATE TABLE IF NOT EXISTS show_tables_test(
+		d1 VARCHAR PRIMARY KEY,
+		d2 VARCHAR
+	) WITH (
+		kafka_topic='show_tables_test', 
+		value_format='protobuf',
+		partitions=1
+	);
+	`
+
+	ksql, err := NewKsqlDB(net.Options{
+		BaseUrl:   "http://localhost:8088",
+		AllowHTTP: true,
+	})
+
+	require.Nil(t, err)
+
+	// create a table
+	_, err = ksql.Exec(context.Background(), StmntSQL{KSQL: createTableStmnt})
+	require.Nil(t, err)
+
+	// drop table
+	defer func() {
+		_, err := ksql.Exec(context.Background(), StmntSQL{KSQL: "DROP TABLE show_tables_test;"})
+		require.Nil(t, err)
+	}()
+
+	type args struct {
+		ctx context.Context
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantTables []Table
+		wantErr    bool
+	}{
+		{
+			name: "success showing tables",
+			args: args{
+				ctx: context.Background(),
+			},
+			wantTables: []Table{
+				{
+					Type:        "TABLE",
+					Name:        "SHOW_TABLES_TEST",
+					Topic:       "show_tables_test",
+					KeyFormat:   "KAFKA",
+					ValueFormat: "PROTOBUF",
+					IsWindowed:  false,
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		tables, err := ksql.ShowTables(tt.args.ctx)
+		assert.Equal(t, tt.wantTables, tables)
+		if tt.wantErr {
+			assert.NotNil(t, err)
+		} else {
+			assert.Nil(t, err)
+		}
+	}
+}
