@@ -13,7 +13,7 @@ func TestIntegrationKsqlDB_CloseQuery(t *testing.T) {
 	createStreamStmnt := `CREATE STREAM close_query_test (
 		d1 VARCHAR
 	) WITH (
-		kafka_topic='test_stream',
+		kafka_topic='close_query_test',
 		value_format='protobuf',
 		partitions=1
 	);`

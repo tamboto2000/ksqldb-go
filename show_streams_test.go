@@ -13,7 +13,7 @@ func TestIntegrationKsqlDB_ShowStreams(t *testing.T) {
 	createStreamStmnt := `CREATE STREAM IF NOT EXISTS show_streams_test (
 		d1 BOOLEAN
 	) WITH (
-		kafka_topic='test_stream', 
+		kafka_topic='show_streams_test', 
 		value_format='protobuf',
 		partitions=1
 	);`
@@ -56,7 +56,7 @@ func TestIntegrationKsqlDB_ShowStreams(t *testing.T) {
 				{
 					Type:        "STREAM",
 					Name:        "SHOW_STREAMS_TEST",
-					Topic:       "test_stream",
+					Topic:       "show_streams_test",
 					KeyFormat:   "KAFKA",
 					ValueFormat: "PROTOBUF",
 					IsWindowed:  false,

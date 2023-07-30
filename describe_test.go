@@ -13,7 +13,7 @@ func TestIntegrationKsqlDB_Describe(t *testing.T) {
 	createStreamStmnt := `CREATE STREAM IF NOT EXISTS describe_stream_test (
 		d1 VARCHAR
 	) WITH (
-		kafka_topic='test_stream', 
+		kafka_topic='describe_stream_test', 
 		value_format='protobuf',
 		partitions=1
 	);`
@@ -22,7 +22,7 @@ func TestIntegrationKsqlDB_Describe(t *testing.T) {
 		d1 VARCHAR PRIMARY KEY,
 		d2 VARCHAR
 	) WITH (
-		kafka_topic='test_stream', 
+		kafka_topic='describe_table_test', 
 		value_format='protobuf',
 		partitions=1
 	);`
@@ -95,7 +95,7 @@ func TestIntegrationKsqlDB_Describe(t *testing.T) {
 				Extended:    false,
 				KeyFormat:   "KAFKA",
 				ValueFormat: "PROTOBUF",
-				Topic:       "test_stream",
+				Topic:       "describe_stream_test",
 				Partitions:  1,
 				Replication: 1,
 			},

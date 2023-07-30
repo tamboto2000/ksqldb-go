@@ -19,7 +19,7 @@ func TestIntegrationKsqlDB_Pull(t *testing.T) {
 		d5 DOUBLE,
 		d6 DECIMAL(5, 2)
 	) WITH (
-		kafka_topic='test_stream', 
+		kafka_topic='pull_test', 
 		value_format='protobuf',
 		partitions=1
 	);`
