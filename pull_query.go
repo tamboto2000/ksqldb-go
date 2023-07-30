@@ -4,8 +4,11 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 )
+
+var ErrNoRows = errors.New("no rows in result set")
 
 // Pull run PULL query, which will return all result at once.
 // A PULL query is a query that didn't EMIT CHANGES,
@@ -39,6 +42,10 @@ func (ksql *KsqlDB) Pull(ctx context.Context, q QuerySQL) (Header, []Row, error)
 				return header, rows, err
 			}
 
+			if len(rows) == 0 {
+				return header, rows, ErrNoRows
+			}
+
 			return header, rows, nil
 		}
 
@@ -58,4 +65,19 @@ func (ksql *KsqlDB) Pull(ctx context.Context, q QuerySQL) (Header, []Row, error)
 
 		rows = append(rows, row)
 	}
+}
+
+// PullRow pull exactly one Row of data.
+// It does not care even if you did not specify a LIMIT 1,
+// it will only return the first Row of the result set
+func (ksql *KsqlDB) PullRow(ctx context.Context, q QuerySQL) (Header, Row, error) {
+	var header Header
+	var row Row
+
+	header, rows, err := ksql.Pull(ctx, q)
+	if err != nil {
+		return header, row, err
+	}
+
+	return header, rows[0], nil
 }

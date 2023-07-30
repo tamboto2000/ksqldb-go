@@ -130,3 +130,88 @@ func TestIntegrationKsqlDB_Pull(t *testing.T) {
 		}
 	}
 }
+
+func TestIntegrationKsqlDB_PullRow(t *testing.T) {
+	createStreamStmnt := `
+	CREATE STREAM IF NOT EXISTS pull_row_stream_test (
+		d1 VARCHAR,
+		d2 INT,
+		d3 DOUBLE
+	) WITH (
+		kafka_topic='pull_row_stream_test', 
+		value_format='protobuf',
+		partitions=1
+	);
+	`
+
+	ksql, err := NewKsqlDB(net.Options{
+		BaseUrl:   "http://localhost:8088",
+		AllowHTTP: true,
+	})
+
+	require.Nil(t, err)
+
+	// create a stream
+	_, err = ksql.Exec(context.Background(), StmntSQL{KSQL: createStreamStmnt})
+	require.Nil(t, err)
+
+	// drop stream
+	defer func() {
+		_, err := ksql.Exec(context.Background(), StmntSQL{KSQL: "DROP STREAM pull_row_stream_test;"})
+		require.Nil(t, err)
+	}()
+
+	type args struct {
+		ctx context.Context
+		q   QuerySQL
+	}
+	tests := []struct {
+		name       string
+		args       args
+		initData   func(ctx context.Context, ksql *KsqlDB) error
+		wantHeader Header
+		wantRow    Row
+		wantErr    bool
+	}{
+		{
+			name: "success pulling a sigle row of data from a STREAM with LIMIT 1",
+			args: args{
+				ctx: context.Background(),
+				q:   QuerySQL{SQL: "SELECT * FROM pull_row_stream_test LIMIT 1;"},
+			},
+			initData: func(ctx context.Context, ksql *KsqlDB) error {
+				ksql.Exec(ctx, StmntSQL{KSQL: `INSERT INTO pull_row_stream_test(
+					d1,
+					d2,
+					d3
+				) VALUES (
+					'varchar',
+					1,
+					1.5
+				);`})
+
+				return nil
+			},
+			wantHeader: Header{
+				ColumnNames: []string{"D1", "D2", "D3"},
+				ColumnTypes: []string{"STRING", "INTEGER", "DOUBLE"},
+			},
+			wantRow: Row{"varchar", float64(1), float64(1.5)},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		err := tt.initData(tt.args.ctx, ksql)
+		require.Nil(t, err)
+
+		header, row, err := ksql.PullRow(tt.args.ctx, tt.args.q)
+		assert.Equal(t, tt.wantHeader.ColumnNames, header.ColumnNames)
+		assert.Equal(t, tt.wantHeader.ColumnTypes, header.ColumnTypes)
+		assert.Equal(t, tt.wantRow, row)
+		if tt.wantErr {
+			assert.NotNil(t, err)
+		} else {
+			assert.Nil(t, err)
+		}
+	}
+}
