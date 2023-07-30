@@ -2,18 +2,16 @@ package ksqldbx
 
 import "context"
 
-type StreamExtended SourceDesc
+type Stream SourceDesc
 
-type Stream struct {
-	Type        string `json:"type"`
-	Name        string `json:"name"`
-	Topic       string `json:"topic"`
-	KeyFormat   string `json:"keyFormat"`
-	ValueFormat string `json:"valueFormat"`
-	IsWindowed  bool   `json:"isWindowed"`
+func (s Stream) IsExtended() bool {
+	return s.Extended
 }
 
-// ShowStreams fetch all existing streams
+// ShowStreams get all existing streams.
+// See https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-rest-api/ksql-endpoint
+// and https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-reference/show-streams/
+// for more info
 func (ksql *KsqlDB) ShowStreams(ctx context.Context) ([]Stream, error) {
 	var streams []Stream
 	q := "SHOW STREAMS;"
